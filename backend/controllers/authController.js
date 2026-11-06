@@ -9,7 +9,7 @@ const logger = require('../config/logger');
  */
 const register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     // Check if user already exists
     const [existingUsers] = await pool.execute(
@@ -28,8 +28,7 @@ const register = async (req, res) => {
     const saltRounds = 10;
     const password_hash = await bcrypt.hash(password, saltRounds);
 
-    // Insert new user (default role is 'user', only allow admin if explicitly set)
-    const userRole = role === 'admin' ? 'admin' : 'user';
+    const userRole = 'user';
     const [result] = await pool.execute(
       'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
       [name, email, password_hash, userRole]
@@ -167,4 +166,3 @@ module.exports = {
   login,
   getCurrentUser
 };
-

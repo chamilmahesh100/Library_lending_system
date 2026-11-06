@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
 const Register = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '',  role: 'user' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -22,7 +22,7 @@ const Register = () => {
     setLoading(true);
 
     // Frontend validation
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword || !formData.role) {
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Please fill in all fields');
       setLoading(false);
       return;
@@ -50,18 +50,12 @@ const Register = () => {
       const response = await authAPI.register({
         name: formData.name,
         email: formData.email,
-        password: formData.password,
-        role: formData.role
+        password: formData.password
       });
 
       if (response.data.success) {
         login(response.data.data.user, response.data.data.token);
-        // Redirect based on role
-        if (response.data.data.user.role === 'admin') {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/catalog');
-        }
+        navigate('/catalog');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
@@ -103,20 +97,6 @@ const Register = () => {
               placeholder="Enter your email"/>
           </div>
 
-           <div className="form-group">
-              <label htmlFor="role">Role</label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                required
-              >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -154,4 +134,3 @@ const Register = () => {
 };
 
 export default Register;
-

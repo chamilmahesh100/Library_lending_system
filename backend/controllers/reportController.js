@@ -485,12 +485,60 @@ const exportMonthlyReportPDF = async (req, res) => {
   }
 };
 
+const getDashboardOverview = async (req, res) => {
+  try {
+    const [summaryRows] = await pool.execute(`
+      SELECT
+        (SELECT COUNT(*) FROM books) AS total_books,
+        (SELECT COUNT(*) FROM users WHERE role IN ('user', 'member')) AS total_members,
+        (SELECT COUNT(*) FROM lending_records WHERE status = 'APPROVED' AND returned_date IS NULL) AS active_loans,
+        (SELECT COUNT(*) FROM lending_records WHERE status = 'APPROVED' AND returned_date IS NULL AND due_date < CURDATE()) AS overdue_books,
+        (SELECT COUNT(*) FROM reservations WHERE status = 'WAITING') AS pending_reservations,
+        (SELECT COALESCE(SUM(fine_amount), 0) FROM lending_records WHERE status = 'APPROVED' AND (returned_date IS NULL OR fine_amount > 0)) AS outstanding_fines,
+        (SELECT COUNT(*) FROM books WHERE available_quantity = 0) AS unavailable_books
+    `);
+
+    const summary = summaryRows[0] || {};
+
+    const [recentActivity] = await pool.execute(`
+      SELECT al.id, al.action, al.entity_type, al.entity_id, al.description, al.created_at,
+             u.name AS user_name, u.email AS user_email
+      FROM audit_logs al
+      LEFT JOIN users u ON u.id = al.user_id
+      ORDER BY al.created_at DESC
+      LIMIT 8
+    `);
+
+    res.json({
+      success: true,
+      data: {
+        metrics: {
+          total_books: Number(summary.total_books || 0),
+          total_members: Number(summary.total_members || 0),
+          active_loans: Number(summary.active_loans || 0),
+          overdue_books: Number(summary.overdue_books || 0),
+          pending_reservations: Number(summary.pending_reservations || 0),
+          outstanding_fines: Number(summary.outstanding_fines || 0),
+          unavailable_books: Number(summary.unavailable_books || 0)
+        },
+        recent_activity: recentActivity
+      }
+    });
+  } catch (error) {
+    logger.error('Get dashboard overview error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching dashboard overview'
+    });
+  }
+};
+
 module.exports = {
   generateDailyReport,
   generateMonthlyReport,
   exportDailyReportCSV,
   exportDailyReportPDF,
   exportMonthlyReportCSV,
-  exportMonthlyReportPDF
+  exportMonthlyReportPDF,
+  getDashboardOverview
 };
-

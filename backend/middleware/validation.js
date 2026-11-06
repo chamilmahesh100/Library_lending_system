@@ -65,9 +65,47 @@ const validateBook = [
   body('isbn')
     .trim()
     .notEmpty().withMessage('ISBN is required')
-    .isLength({ min: 5, max: 10 }).withMessage('ISBN must be between 5 and 10 characters'),
+    .isLength({ min: 5, max: 20 }).withMessage('ISBN must be between 5 and 20 characters'),
+  body('publisher')
+    .optional({ nullable: true })
+    .trim()
+    .isLength({ max: 255 }).withMessage('Publisher must be 255 characters or fewer'),
+  body('publication_year')
+    .optional({ nullable: true })
+    .isInt({ min: 0, max: new Date().getFullYear() + 5 }).withMessage('Publication year is invalid'),
+  body('edition')
+    .optional({ nullable: true })
+    .trim()
+    .isLength({ max: 100 }).withMessage('Edition must be 100 characters or fewer'),
+  body('language')
+    .optional({ nullable: true })
+    .trim()
+    .isLength({ max: 100 }).withMessage('Language must be 100 characters or fewer'),
+  body('shelf_location')
+    .optional({ nullable: true })
+    .trim()
+    .isLength({ max: 255 }).withMessage('Shelf location must be 255 characters or fewer'),
+  body('description')
+    .optional({ nullable: true })
+    .trim()
+    .isLength({ max: 5000 }).withMessage('Description is too long'),
+  body('category_id')
+    .optional({ nullable: true })
+    .isInt({ min: 1 }).withMessage('Category ID must be a valid positive integer'),
   body('quantity')
     .isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer'),
+  handleValidationErrors
+];
+
+const validateCategory = [
+  body('name')
+    .trim()
+    .notEmpty().withMessage('Category name is required')
+    .isLength({ min: 2, max: 255 }).withMessage('Category name must be between 2 and 255 characters'),
+  body('description')
+    .optional({ nullable: true })
+    .trim()
+    .isLength({ max: 2000 }).withMessage('Description is too long'),
   handleValidationErrors
 ];
 
@@ -75,6 +113,7 @@ module.exports = {
   validateRegister,
   validateLogin,
   validateBook,
+  validateCategory,
   handleValidationErrors
 };
 

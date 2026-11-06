@@ -6,9 +6,17 @@ const {
   exportDailyReportCSV,
   exportDailyReportPDF,
   exportMonthlyReportCSV,
-  exportMonthlyReportPDF
+  exportMonthlyReportPDF,
+  getDashboardOverview
 } = require('../controllers/reportController');
 const { authenticate, isAdmin } = require('../middleware/auth');
+
+/**
+ * @route   GET /api/reports/overview
+ * @desc    Get dashboard summary for admin operations
+ * @access  Private (Admin)
+ */
+router.get('/overview', authenticate, isAdmin, getDashboardOverview);
 
 /**
  * @route   GET /api/reports/daily

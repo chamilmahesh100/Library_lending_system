@@ -30,18 +30,18 @@
   font-size: 24px;
 }
 
-.form-group {
+.login-card .form-group {
   margin-bottom: 20px;
 }
 
-.form-group label {
+.login-card .form-group label {
   display: block;
   margin-bottom: 8px;
   color: #333;
   font-weight: 500;
 }
 
-.form-group input {
+.login-card .form-group input {
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
@@ -53,7 +53,7 @@
   cursor: pointer;
 }
 
-.form-group select {
+.login-card .form-group select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -65,13 +65,13 @@
   width: 100%;
 }
 
-.form-group input:focus,
-.form-group select:focus {
+.login-card .form-group input:focus,
+.login-card .form-group select:focus {
   outline: none;
   border-color: #667eea;
 }
 
-.btn-primary {
+.login-card .btn-primary {
   width: 100%;
   padding: 12px;
   background: #667eea;
@@ -84,11 +84,11 @@
   transition: background 0.3s;
 }
 
-.btn-primary:hover:not(:disabled) {
+.login-card .btn-primary:hover:not(:disabled) {
   background: #5568d3;
 }
 
-.btn-primary:disabled {
+.login-card .btn-primary:disabled {
   background: #ccc;
   cursor: not-allowed;
 }
@@ -118,3 +118,77 @@
   text-decoration: underline;
 }
 
+.login-container {
+  min-height: 100vh;
+  padding: clamp(16px, 4vw, 32px);
+}
+
+.login-card {
+  max-width: 430px;
+  padding: clamp(24px, 5vw, 38px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 12px;
+  box-shadow: 0 16px 44px rgba(31, 32, 64, 0.2);
+}
+
+.login-card h1 {
+  margin-bottom: 8px;
+  font-size: clamp(1.5rem, 4vw, 1.8rem);
+  letter-spacing: -0.02em;
+}
+
+.login-card h2 {
+  margin-bottom: 24px;
+  font-size: 1.2rem;
+}
+
+.login-card .form-group {
+  margin-bottom: 16px;
+}
+
+.login-card .form-group label {
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+}
+
+.login-card .form-group input,
+.login-card .form-group select {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-color: #d9dce5;
+  border-radius: 7px;
+  cursor: text;
+}
+
+.login-card .form-group input:focus,
+.login-card .form-group select:focus {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+}
+
+.login-card .btn-primary {
+  min-height: 44px;
+  margin-top: 4px;
+  border-radius: 7px;
+}
+
+.error-message {
+  border: 1px solid #f3c6c8;
+  border-radius: 8px;
+  line-height: 1.45;
+}
+
+.register-link {
+  margin-top: 18px;
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    align-items: flex-start;
+    padding: 18px 14px;
+  }
+
+  .login-card {
+    margin: auto 0;
+  }
+}

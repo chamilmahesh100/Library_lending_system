@@ -10,8 +10,8 @@ const PrivateRoute = ({ children, adminOnly = false }) => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <div>Loading...</div>
+      <div className="route-loading">
+        <div className="page-loading">Loading your library...</div>
       </div>
     );
   }
@@ -28,4 +28,3 @@ const PrivateRoute = ({ children, adminOnly = false }) => {
 };
 
 export default PrivateRoute;
-

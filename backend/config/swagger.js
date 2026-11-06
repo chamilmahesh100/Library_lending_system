@@ -59,8 +59,9 @@ const options = {
             id: { type: 'integer' },
             user_id: { type: 'integer' },
             book_id: { type: 'integer' },
-            borrowed_date: { type: 'string', format: 'date' },
-            due_date: { type: 'string', format: 'date' },
+            status: { type: 'string', enum: ['PENDING', 'APPROVED', 'REJECTED'] },
+            borrowed_date: { type: 'string', format: 'date', nullable: true },
+            due_date: { type: 'string', format: 'date', nullable: true },
             returned_date: { type: 'string', format: 'date', nullable: true },
             fine_amount: { type: 'number', format: 'decimal' }
           }
@@ -86,4 +87,3 @@ const options = {
 const swaggerSpec = swaggerJsdoc(options);
 
 module.exports = swaggerSpec;
-
