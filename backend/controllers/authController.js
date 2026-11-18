@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database');
 const logger = require('../config/logger');
+const createAuditLog = require('../services/auditLog');
 
 /**
  * Register a new user
@@ -34,6 +35,7 @@ const register = async (req, res) => {
       [name, email, password_hash, userRole]
     );
 
+    await createAuditLog(result.insertId, 'REGISTER', 'user', result.insertId, 'Registered a new account');
     logger.info(`New user registered: ${email} (ID: ${result.insertId})`);
 
     // Generate JWT token
@@ -99,6 +101,8 @@ const login = async (req, res) => {
       });
     }
 
+    await createAuditLog(user.id, 'LOGIN', 'user', user.id, 'Logged in');
+
     // Generate JWT token
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
@@ -128,6 +132,14 @@ const login = async (req, res) => {
       message: 'Server error during login'
     });
   }
+};
+
+const logout = async (req, res) => {
+  await createAuditLog(req.user.id, 'LOGOUT', 'user', req.user.id, 'Logged out');
+  res.json({
+    success: true,
+    message: 'Logout recorded'
+  });
 };
 
 /**
@@ -164,5 +176,6 @@ const getCurrentUser = async (req, res) => {
 module.exports = {
   register,
   login,
+  logout,
   getCurrentUser
 };

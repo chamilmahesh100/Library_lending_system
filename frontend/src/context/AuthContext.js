@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { authAPI } from '../services/api';
 
 const AuthContext = createContext();
@@ -14,6 +14,12 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const clearSession = useCallback(() => {
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }, []);
 
   useEffect(() => {
     // Check if user is logged in on mount
@@ -31,17 +37,17 @@ export const AuthProvider = ({ children }) => {
           })
           .catch(() => {
             // Token invalid, clear storage
-            logout();
+            clearSession();
           })
           .finally(() => setLoading(false));
       } catch (error) {
-        logout();
+        clearSession();
         setLoading(false);
       }
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [clearSession]);
 
   const login = (userData, token) => {
     setUser(userData);
@@ -49,10 +55,14 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.error('Failed to record logout activity:', error);
+    } finally {
+      clearSession();
+    }
   };
 
   const isAdmin = () => {

@@ -63,6 +63,7 @@ const options = {
             borrowed_date: { type: 'string', format: 'date', nullable: true },
             due_date: { type: 'string', format: 'date', nullable: true },
             returned_date: { type: 'string', format: 'date', nullable: true },
+            returned_at: { type: 'string', format: 'date-time', nullable: true },
             fine_amount: { type: 'number', format: 'decimal' }
           }
         },

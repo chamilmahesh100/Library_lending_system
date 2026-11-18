@@ -99,17 +99,19 @@
 }
 
 .activity-list {
-  background: white;
+  margin-top: 16px;
+  padding: 2px 18px;
+  border: 1px solid #eaecf2;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  padding: 12px 16px;
+  background: #fff;
 }
 
 .activity-item {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 14px 0;
+  gap: 18px;
+  padding: 15px 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -117,18 +119,35 @@
   border-bottom: none;
 }
 
+.activity-description {
+  min-width: 0;
+}
+
+.activity-action {
+  display: inline-block;
+  color: #4d5fc2;
+  font-size: 0.76rem;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
 .activity-item p {
   margin: 5px 0 0;
   color: #666;
+  overflow-wrap: anywhere;
 }
 
 .activity-meta {
   display: flex;
+  flex: 0 0 auto;
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
+  max-width: 42%;
   color: #666;
   font-size: 0.8rem;
+  text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .section-header {
@@ -419,43 +438,6 @@ tbody tr:hover {
   margin-bottom: 16px;
 }
 
-.activity-list {
-  margin-top: 16px;
-  padding: 2px 18px;
-  border: 1px solid #eaecf2;
-  box-shadow: none;
-}
-
-.activity-item {
-  align-items: center;
-  gap: 18px;
-  padding: 15px 0;
-}
-
-.activity-description {
-  min-width: 0;
-}
-
-.activity-action {
-  display: inline-block;
-  color: #4d5fc2;
-  font-size: 0.76rem;
-  letter-spacing: 0.045em;
-  text-transform: uppercase;
-}
-
-.activity-item p {
-  margin-top: 5px;
-  overflow-wrap: anywhere;
-}
-
-.activity-meta {
-  flex: 0 0 auto;
-  max-width: 42%;
-  text-align: right;
-  overflow-wrap: anywhere;
-}
-
 .books-table,
 .users-table {
   overflow: hidden;
@@ -647,8 +629,7 @@ tbody tr:hover {
 }
 
 .list-item,
-.overdue-card,
-.reservation-card {
+.overdue-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -694,14 +675,6 @@ tbody tr:hover {
   flex: 0 0 auto;
   color: #a53e3e;
   font-size: 0.95rem;
-}
-
-.reservation-card {
-  align-items: center;
-}
-
-.reservation-fulfill {
-  flex: 0 0 auto;
 }
 
 .status-badge {
@@ -895,10 +868,6 @@ tbody tr:hover {
     flex-wrap: wrap;
   }
 
-  .activity-list {
-    padding: 0 13px;
-  }
-
   .activity-item {
     align-items: flex-start;
     flex-direction: column;
@@ -913,12 +882,6 @@ tbody tr:hover {
 
   .list-item,
   .overdue-card,
-  .reservation-card {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 12px;
-  }
-
   .record-fine {
     align-self: flex-start;
   }

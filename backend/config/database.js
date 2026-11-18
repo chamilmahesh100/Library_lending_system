@@ -149,6 +149,7 @@ async function initializeDatabase() {
         borrowed_date DATE NULL,
         due_date DATE NULL,
         returned_date DATE NULL,
+        returned_at DATETIME(3) NULL,
         fine_amount DECIMAL(10, 2) DEFAULT 0.00,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -164,6 +165,7 @@ async function initializeDatabase() {
     await ensureColumn('lending_records', 'copy_id', 'INT NULL');
     await ensureColumn('lending_records', 'status', "ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'APPROVED'");
     await ensureColumn('lending_records', 'renewal_count', 'INT NOT NULL DEFAULT 0');
+    await ensureColumn('lending_records', 'returned_at', 'DATETIME(3) NULL');
     const [lendingColumns] = await pool.query('SHOW COLUMNS FROM `lending_records`');
     for (const columnName of ['borrowed_date', 'due_date']) {
       const column = lendingColumns.find((item) => item.Field === columnName);

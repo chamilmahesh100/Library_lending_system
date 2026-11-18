@@ -14,6 +14,7 @@ const {
 } = require('../controllers/bookController');
 const { validateBook } = require('../middleware/validation');
 const { authenticate, isAdmin } = require('../middleware/auth');
+const auditActivity = require('../middleware/auditActivity');
 
 /**
  * @route   GET /api/books
@@ -48,14 +49,14 @@ router.get('/:id/copies', authenticate, getBookCopies);
  * @desc    Create a new physical copy for a book
  * @access  Private (Admin)
  */
-router.post('/:id/copies', authenticate, isAdmin, createBookCopy);
+router.post('/:id/copies', authenticate, isAdmin, auditActivity, createBookCopy);
 
 /**
  * @route   PUT /api/books/:id/copies/:copyId/status
  * @desc    Update a physical copy status (available, damaged, lost, etc.)
  * @access  Private (Admin)
  */
-router.put('/:id/copies/:copyId/status', authenticate, isAdmin, updateCopyStatus);
+router.put('/:id/copies/:copyId/status', authenticate, isAdmin, auditActivity, updateCopyStatus);
 
 /**
  * @route   GET /api/books/:id
@@ -69,21 +70,21 @@ router.get('/:id', authenticate, getBookById);
  * @desc    Create new book (Admin only)
  * @access  Private (Admin)
  */
-router.post('/', authenticate, isAdmin, validateBook, createBook);
+router.post('/', authenticate, isAdmin, validateBook, auditActivity, createBook);
 
 /**
  * @route   PUT /api/books/:id
  * @desc    Update book (Admin only)
  * @access  Private (Admin)
  */
-router.put('/:id', authenticate, isAdmin, validateBook, updateBook);
+router.put('/:id', authenticate, isAdmin, validateBook, auditActivity, updateBook);
 
 /**
  * @route   DELETE /api/books/:id
  * @desc    Delete book (Admin only)
  * @access  Private (Admin)
  */
-router.delete('/:id', authenticate, isAdmin, deleteBook);
+router.delete('/:id', authenticate, isAdmin, auditActivity, deleteBook);
 
 module.exports = router;
 

@@ -396,7 +396,18 @@ const returnBook = async (req, res) => {
     }
 
     const lending = lendings[0];
-    const returned_date = new Date();
+    const returnedAt = new Date();
+    const returnedAtUtc = returnedAt.toISOString();
+    const returnedAtSql = returnedAtUtc.slice(0, 23).replace('T', ' ');
+    const returnDateParts = Object.fromEntries(
+      new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Colombo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(returnedAt).map(({ type, value }) => [type, value])
+    );
+    const returnedDate = `${returnDateParts.year}-${returnDateParts.month}-${returnDateParts.day}`;
 
     const copyId = lending.copy_id || ((await connection.execute(
       'SELECT id FROM book_copies WHERE book_id = ? AND status = ? ORDER BY id LIMIT 1 FOR UPDATE',
@@ -427,8 +438,8 @@ const returnBook = async (req, res) => {
     }
 
     await connection.execute(
-      'UPDATE lending_records SET returned_date = ?, fine_amount = ? WHERE id = ?',
-      [returned_date, finalFineAmount, lending_id]
+      'UPDATE lending_records SET returned_date = ?, returned_at = ?, fine_amount = ? WHERE id = ?',
+      [returnedDate, returnedAtSql, finalFineAmount, lending_id]
     );
 
     await connection.execute(
@@ -447,7 +458,8 @@ const returnBook = async (req, res) => {
       data: {
         lending_record: {
           id: lending_id,
-          returned_date,
+          returned_date: returnedDate,
+          returned_at: returnedAt,
           fine_amount: Number(finalFineAmount)
         }
       }
@@ -527,7 +539,10 @@ const getAllLendingRecords = async (req, res) => {
         bc.accession_number,
         lr.borrowed_date,
         DATE_FORMAT(lr.due_date, '%Y-%m-%d') AS due_date,
-        lr.returned_date,
+        CASE
+          WHEN lr.returned_at IS NOT NULL THEN DATE_FORMAT(lr.returned_at, '%Y-%m-%dT%H:%i:%sZ')
+          ELSE DATE_FORMAT(lr.returned_date, '%Y-%m-%d')
+        END AS returned_date,
         lr.fine_amount,
         lr.renewal_count,
         lr.status,

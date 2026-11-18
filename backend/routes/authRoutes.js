@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, getCurrentUser } = require('../controllers/authController');
+const { register, login, logout, getCurrentUser } = require('../controllers/authController');
 const { validateRegister, validateLogin } = require('../middleware/validation');
 const { authenticate } = require('../middleware/auth');
 
@@ -65,6 +65,7 @@ router.post('/register', validateRegister, register);
  *         description: Invalid credentials
  */
 router.post('/login', validateLogin, login);
+router.post('/logout', authenticate, logout);
 
 /**
  * @swagger

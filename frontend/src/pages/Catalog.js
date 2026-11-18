@@ -3,14 +3,25 @@ import { lendingAPI, booksAPI, categoriesAPI, reservationAPI, notificationAPI } 
 import { useAuth } from '../context/AuthContext';
 import './Catalog.css';
 
+const isEmptyDateValue = (value) => value === null || value === undefined || value === '' || value === '0000-00-00' || value === '1970-01-01';
+
 const formatLoanDate = (value) => {
-  const datePart = String(value || '').slice(0, 10);
+  if (isEmptyDateValue(value)) {
+    return '-';
+  }
+
+  const datePart = String(value).trim().slice(0, 10);
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
   const date = match
     ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
     : new Date(value);
 
-  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString();
+  if (Number.isNaN(date.getTime())) {
+    return '-';
+  }
+
+  const isEpochDate = date.getTime() === 0;
+  return isEpochDate ? '-' : date.toLocaleDateString();
 };
 
 const Catalog = () => {
@@ -216,7 +227,7 @@ const Catalog = () => {
                   <div key={reservation.id} className="history-item reservation-history-item">
                     <div className="history-info">
                       <h4>{reservation.title}</h4>
-                      <p>Reserved: {new Date(reservation.reservation_date).toLocaleDateString()}</p>
+                      <p>Reserved: {reservation.reservation_date ? formatLoanDate(reservation.reservation_date) : ''}</p>
                       <span className="status-badge status-waiting">WAITING</span>
                     </div>
                     <button onClick={() => reservationAPI.cancel(reservation.id).then(() => loadData())} className="btn-secondary">

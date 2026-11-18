@@ -1,17 +1,6 @@
 const { pool } = require('../config/database');
 const logger = require('../config/logger');
 
-const createAuditLog = async (userId, action, entityType, entityId, description) => {
-  try {
-    await pool.execute(
-      'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, description) VALUES (?, ?, ?, ?, ?)',
-      [userId, action, entityType, entityId, description]
-    );
-  } catch (error) {
-    logger.warn(`Audit log insert failed: ${error.message}`);
-  }
-};
-
 const getUserReservations = async (req, res) => {
   try {
     const [reservations] = await pool.execute(
@@ -95,14 +84,6 @@ const createReservation = async (req, res) => {
       ]
     );
 
-    await createAuditLog(
-      user_id,
-      'CREATE_RESERVATION',
-      'reservation',
-      result.insertId,
-      `Created reservation for book ${book_id}`
-    );
-
     logger.info(`Reservation created for user ${user_id}, book ${book_id}`);
 
     res.status(201).json({
@@ -146,14 +127,6 @@ const cancelReservation = async (req, res) => {
     await pool.execute(
       'UPDATE reservations SET status = ?, active_reservation = NULL WHERE id = ?',
       ['CANCELLED', id]
-    );
-
-    await createAuditLog(
-      user_id,
-      'CANCEL_RESERVATION',
-      'reservation',
-      Number(id),
-      `Cancelled reservation ${id}`
     );
 
     res.json({
@@ -224,14 +197,6 @@ const fulfillReservation = async (req, res) => {
         'Your reserved book is now available for pickup.',
         'reservation'
       ]
-    );
-
-    await createAuditLog(
-      reservation.user_id,
-      'FULFILL_RESERVATION',
-      'reservation',
-      Number(id),
-      `Fulfilled reservation for book ${reservation.book_id}`
     );
 
     res.json({

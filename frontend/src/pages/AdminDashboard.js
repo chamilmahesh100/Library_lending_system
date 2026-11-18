@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { booksAPI, usersAPI, categoriesAPI, lendingAPI, reservationAPI, reportsAPI } from '../services/api';
+import { booksAPI, usersAPI, categoriesAPI, lendingAPI, reportsAPI, auditAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import './AdminDashboard.css';
 
@@ -32,13 +32,167 @@ const formatLoanDate = (value) => {
   return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString();
 };
 
+export const formatDashboardDate = (value) => {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  const normalizedValue = typeof value === 'string' ? value.trim() : value;
+  if (normalizedValue === '') {
+    return '';
+  }
+
+  const dateOnlyMatch = typeof normalizedValue === 'string'
+    ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(normalizedValue)
+    : null;
+
+  if (dateOnlyMatch) {
+    const year = Number(dateOnlyMatch[1]);
+    const month = Number(dateOnlyMatch[2]);
+    const day = Number(dateOnlyMatch[3]);
+    const date = new Date(year, month - 1, day);
+
+    if (
+      Number.isNaN(date.getTime())
+      || date.getFullYear() !== year
+      || date.getMonth() !== month - 1
+      || date.getDate() !== day
+    ) {
+      return '';
+    }
+
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric'
+    }).format(date);
+  }
+
+  const date = normalizedValue instanceof Date ? normalizedValue : new Date(normalizedValue);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Colombo',
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric'
+  }).format(date);
+};
+
+export const formatDueDate = (value) => {
+  if (value === null || value === undefined || value === 0) {
+    return '-';
+  }
+
+  const normalizedValue = typeof value === 'string' ? value.trim() : value;
+  if (normalizedValue === '' || normalizedValue === '0') {
+    return '-';
+  }
+
+  const datePart = String(normalizedValue).slice(0, 10);
+  if (datePart === '0000-00-00') {
+    return '-';
+  }
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+  const date = match
+    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+    : new Date(normalizedValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return '-';
+  }
+
+  if (match && (
+    date.getFullYear() !== Number(match[1])
+    || date.getMonth() !== Number(match[2]) - 1
+    || date.getDate() !== Number(match[3])
+  )) {
+    return '-';
+  }
+
+  return date.toLocaleDateString();
+};
+
+export const formatReturnedDate = (value) => {
+  if (value === null || value === undefined || value === '') {
+    return '-';
+  }
+
+  const normalizedValue = typeof value === 'string' ? value.trim() : value;
+  if (normalizedValue === '') {
+    return '-';
+  }
+
+  const dateOnlyMatch = typeof normalizedValue === 'string'
+    ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(normalizedValue)
+    : null;
+
+  if (dateOnlyMatch) {
+    const year = Number(dateOnlyMatch[1]);
+    const month = Number(dateOnlyMatch[2]);
+    const day = Number(dateOnlyMatch[3]);
+    const date = new Date(year, month - 1, day);
+
+    if (
+      Number.isNaN(date.getTime())
+      || date.getFullYear() !== year
+      || date.getMonth() !== month - 1
+      || date.getDate() !== day
+    ) {
+      return '-';
+    }
+
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric'
+    }).format(date);
+  }
+
+  const date = normalizedValue instanceof Date ? normalizedValue : new Date(normalizedValue);
+  if (Number.isNaN(date.getTime())) {
+    return '-';
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Colombo',
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric'
+  }).format(date);
+};
+
+export const formatActivityTimestamp = (timestamp) => {
+  if (timestamp === null || timestamp === undefined || timestamp === '') {
+    return '—';
+  }
+
+  const date = new Date(Number(timestamp));
+  if (Number.isNaN(date.getTime())) {
+    return '—';
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Colombo',
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  }).format(date);
+};
+
 const AdminDashboard = () => {
   const [books, setBooks] = useState([]);
   const [users, setUsers] = useState([]);
   const [categories, setCategories] = useState([]);
   const [lendingRecords, setLendingRecords] = useState([]);
   const [overdueRecords, setOverdueRecords] = useState([]);
-  const [reservations, setReservations] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [overview, setOverview] = useState({
     total_books: 0,
@@ -91,13 +245,12 @@ const AdminDashboard = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [booksRes, usersRes, categoriesRes, lendingRes, overdueRes, reservationsRes, overviewRes] = await Promise.all([
+      const [booksRes, usersRes, categoriesRes, lendingRes, overdueRes, overviewRes] = await Promise.all([
         booksAPI.getAll(),
         usersAPI.getAll(),
         categoriesAPI.getAll(),
         lendingAPI.getAll(),
         lendingAPI.getOverdue(),
-        reservationAPI.getAllAdmin(),
         reportsAPI.getOverview()
       ]);
 
@@ -117,7 +270,6 @@ const AdminDashboard = () => {
       setCategories(categoriesRes.data.data.categories || []);
       setLendingRecords(lendingRes.data.data.records || []);
       setOverdueRecords(overdueRes.data.data.records || []);
-      setReservations(reservationsRes.data.data.reservations || []);
       setOverview(overviewRes?.data?.data?.metrics || {
         total_books: 0,
         total_members: 0,
@@ -127,7 +279,12 @@ const AdminDashboard = () => {
         outstanding_fines: 0,
         unavailable_books: 0
       });
-      setRecentActivity(overviewRes?.data?.data?.recent_activity || []);
+      try {
+        const activityRes = await auditAPI.getAll();
+        setRecentActivity(activityRes.data.data.logs || []);
+      } catch (activityError) {
+        setError(activityError.response?.data?.message || 'Failed to load recent activity');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load data');
     } finally {
@@ -308,18 +465,6 @@ const AdminDashboard = () => {
       loadData();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update borrowing limit');
-    }
-  };
-
-  const handleReservationFulfill = async (reservationId) => {
-    try {
-      setError('');
-      setSuccess('');
-      await reservationAPI.fulfill(reservationId);
-      setSuccess('Reservation fulfilled successfully.');
-      loadData();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fulfill reservation');
     }
   };
 
@@ -514,7 +659,7 @@ const AdminDashboard = () => {
                       <tr key={record.id}>
                         <td>{record.book_title}<br /><small>{record.book_author}</small></td>
                         <td>{record.user_name}<br /><small>{record.user_email}</small></td>
-                        <td>{formatLoanDate(record.created_at)}</td>
+                        <td>{formatDashboardDate(record.created_at)}</td>
                         <td>
                           <button
                             onClick={() => handleBorrowRequestDecision(record, 'approve')}
@@ -555,7 +700,7 @@ const AdminDashboard = () => {
                   </div>
                   <div className="activity-meta">
                     <span>{activity.user_name || 'System'}</span>
-                    <small>{new Date(activity.created_at).toLocaleString()}</small>
+                    <small>{formatActivityTimestamp(activity.created_at_utc_ms)}</small>
                   </div>
                 </div>
               ))
@@ -821,9 +966,9 @@ const AdminDashboard = () => {
                       <tr key={record.id}>
                         <td>{record.book_title}</td>
                         <td>{record.user_name}<br /><small>{record.user_email}</small></td>
-                        <td>{formatLoanDate(record.borrowed_date || record.created_at)}</td>
-                        <td>{formatLoanDate(record.due_date)}</td>
-                        <td>{record.returned_date ? formatLoanDate(record.returned_date) : '—'}</td>
+                        <td>{formatDashboardDate(record.borrowed_date || record.created_at)}</td>
+                        <td>{formatDueDate(record.due_date)}</td>
+                        <td>{formatReturnedDate(record.returned_date)}</td>
                         <td><span className={`status-badge status-${status.toLowerCase()}`}>{status}</span></td>
                         <td>${fine.toFixed(2)}</td>
                         <td>
@@ -863,30 +1008,6 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   <strong className="record-fine">Fine: ${Number(record.overdue_fine || 0).toFixed(2)}</strong>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="reservations-section dashboard-panel">
-          <h2>Reservations</h2>
-          {reservations.length === 0 ? (
-            <p className="empty-state">No reservations found.</p>
-          ) : (
-            <div className="record-list">
-              {reservations.map((reservation) => (
-                <div key={reservation.id} className="reservation-card">
-                  <div className="record-main">
-                    <strong>{reservation.book_title}</strong>
-                    <p>{reservation.user_name} ({reservation.user_email})</p>
-                    <span className={`status-badge status-${String(reservation.status).toLowerCase()}`}>{reservation.status}</span>
-                  </div>
-                  {reservation.status === 'WAITING' && (
-                    <button onClick={() => handleReservationFulfill(reservation.id)} className="btn-small btn-edit reservation-fulfill">
-                      Fulfill
-                    </button>
-                  )}
                 </div>
               ))}
             </div>

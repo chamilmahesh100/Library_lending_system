@@ -3,6 +3,17 @@ import { reportsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import './Reports.css';
 
+const isEmptyDateValue = (value) => value === null || value === undefined || value === '' || value === '0000-00-00' || value === '1970-01-01';
+
+const formatReportDate = (value) => {
+  if (isEmptyDateValue(value)) {
+    return '-';
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString();
+};
+
 const Reports = () => {
   const [dailyDate, setDailyDate] = useState(new Date().toISOString().split('T')[0]);
   const [monthlyYear, setMonthlyYear] = useState(new Date().getFullYear());
@@ -165,8 +176,8 @@ const Reports = () => {
                           <td>{record.id}</td>
                           <td>{record.user_name}</td>
                           <td>{record.book_title}</td>
-                          <td>{new Date(record.borrowed_date).toLocaleDateString()}</td>
-                          <td>{record.returned_date ? new Date(record.returned_date).toLocaleDateString() : '-'}</td>
+                          <td>{formatReportDate(record.borrowed_date)}</td>
+                          <td>{formatReportDate(record.returned_date)}</td>
                           <td>{record.transaction_type}</td>
                         </tr>
                       ))
@@ -243,8 +254,8 @@ const Reports = () => {
                           <td>{record.id}</td>
                           <td>{record.user_name}</td>
                           <td>{record.book_title}</td>
-                          <td>{new Date(record.borrowed_date).toLocaleDateString()}</td>
-                          <td>{record.returned_date ? new Date(record.returned_date).toLocaleDateString() : '-'}</td>
+                          <td>{formatReportDate(record.borrowed_date)}</td>
+                          <td>{formatReportDate(record.returned_date)}</td>
                           <td>{record.transaction_type}</td>
                         </tr>
                       ))

@@ -4,7 +4,8 @@ const logger = require('../config/logger');
 const getAuditLogs = async (req, res) => {
   try {
     const [logs] = await pool.execute(
-      `SELECT al.id, al.action, al.entity_type, al.entity_id, al.description, al.created_at,
+      `SELECT al.id, al.action, al.entity_type, al.entity_id, al.description,
+              CAST(UNIX_TIMESTAMP(al.created_at) * 1000 AS UNSIGNED) AS created_at_utc_ms,
               u.name as user_name, u.email as user_email
        FROM audit_logs al
        LEFT JOIN users u ON u.id = al.user_id

@@ -7,6 +7,7 @@ const {
   deleteCategory
 } = require('../controllers/categoryController');
 const { authenticate, isAdmin } = require('../middleware/auth');
+const auditActivity = require('../middleware/auditActivity');
 
 /**
  * @swagger
@@ -47,7 +48,7 @@ router.get('/', authenticate, getAllCategories);
  *       201:
  *         description: Category created successfully
  */
-router.post('/', authenticate, isAdmin, createCategory);
+router.post('/', authenticate, isAdmin, auditActivity, createCategory);
 
 /**
  * @swagger
@@ -61,7 +62,7 @@ router.post('/', authenticate, isAdmin, createCategory);
  *       200:
  *         description: Category updated successfully
  */
-router.put('/:id', authenticate, isAdmin, updateCategory);
+router.put('/:id', authenticate, isAdmin, auditActivity, updateCategory);
 
 /**
  * @swagger
@@ -75,6 +76,6 @@ router.put('/:id', authenticate, isAdmin, updateCategory);
  *       200:
  *         description: Category deleted successfully
  */
-router.delete('/:id', authenticate, isAdmin, deleteCategory);
+router.delete('/:id', authenticate, isAdmin, auditActivity, deleteCategory);
 
 module.exports = router;

@@ -8,11 +8,12 @@ const {
   fulfillReservation
 } = require('../controllers/reservationController');
 const { authenticate, isAdmin } = require('../middleware/auth');
+const auditActivity = require('../middleware/auditActivity');
 
 router.get('/', authenticate, getUserReservations);
-router.post('/', authenticate, createReservation);
-router.delete('/:id', authenticate, cancelReservation);
+router.post('/', authenticate, auditActivity, createReservation);
+router.delete('/:id', authenticate, auditActivity, cancelReservation);
 router.get('/all', authenticate, isAdmin, getAllReservations);
-router.put('/:id/fulfill', authenticate, isAdmin, fulfillReservation);
+router.put('/:id/fulfill', authenticate, isAdmin, auditActivity, fulfillReservation);
 
 module.exports = router;
